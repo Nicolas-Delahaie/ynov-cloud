@@ -2,12 +2,12 @@
 
 ## Résultat
 
-| Métrique      | Avant         | Après                 | Gain                           |
-| ------------- | ------------- | --------------------- | ------------------------------ |
-| Taille image  | 1.89 GB       | 208 MB                | **−89 %**                      |
-| Image de base | `node:latest` | `node:20-alpine`      | reproductible                  |
-| Utilisateur   | root          | `node` (uid 1000)     | moindre privilège              |
-| Stages Docker | 1             | deps / test / prod    | prod, test et prod séparés     |
+| Métrique      | Avant         | Après              | Gain                       |
+| ------------- | ------------- | ------------------ | -------------------------- |
+| Taille image  | 1.89 GB       | 208 MB             | **−89 %**                  |
+| Image de base | `node:latest` | `node:20-alpine`   | reproductible              |
+| Utilisateur   | root          | `node` (uid 1000)  | moindre privilège          |
+| Stages Docker | 1             | deps / test / prod | prod, test et prod séparés |
 
 ### Comment reproduire la mesure
 
@@ -78,6 +78,7 @@ transitives et réécrire le lockfile).
 > **Note sur le `package-lock.json` :** le lockfile doit être généré sur la **même
 > plateforme** que le build (linux/alpine), sinon `npm ci` échoue sur les dépendances
 > optionnelles spécifiques à la plateforme. Il a été régénéré avec :
+>
 > ```bash
 > docker run --rm -v "$PWD/app":/app -w /app node:20-alpine \
 >   npm install --package-lock-only --no-audit --no-fund
@@ -144,7 +145,7 @@ cp .env.example .env
 docker compose up --build --wait
 
 # Suite de tests jest dans un conteneur, contre la base db
-docker compose --profile test run --rm test
+docker compose --profile test run --rm --build test
 ```
 
 **Résultat : 6/7 suites vertes.** La 7ème (`dockerfile-check.property.test.js`) appelle

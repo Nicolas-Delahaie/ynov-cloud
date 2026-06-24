@@ -43,7 +43,7 @@ Corriger les **5 anti-patterns** du `app/Dockerfile` actuel :
 - [x] `app/Dockerfile` optimisé (multi-stage, user non-root, tag fixe, cache layers)
 - [x] `app/.dockerignore`
 - [x] `OPTIMISATION.md` : les 5 anti-patterns, le pourquoi, et le gain (taille avant/après via `docker images`)
-- [x] Vérifier `docker compose up --build --wait` (app + db healthy) + suite jest en conteneur (`docker compose --profile test run --rm test`) → 6/7 vertes ; `dockerfile-check` relève du harnais enseignant (`teacher-tools/`, non fourni au dépôt étudiant)
+- [x] Vérifier `docker compose up --build --wait` (app + db healthy) + suite jest en conteneur (`docker compose --profile test run --rm --build test`) → 6/7 vertes ; `dockerfile-check` relève du harnais enseignant (`teacher-tools/`, non fourni au dépôt étudiant)
 
 ---
 
