@@ -26,42 +26,22 @@ Migrer/moderniser une application **Express.js (monolithe) + PostgreSQL** (thèm
 
 Le support insiste : *« Intéressez-vous tôt à l'ouverture de votre environnement AWS ou Ikoula »*. La validation d'un compte AWS (carte bancaire, vérification) ou la livraison d'un VPS peut prendre plusieurs heures.
 
-- [ ] **Si AWS** : créer le compte Free Tier, activer le MFA, créer un utilisateur IAM (pas de root au quotidien), poser un **budget alert** à quelques € (FinOps + éviter la facture surprise). **Ne pas upgrade en Paid Plan.**
-- [ ] **Si Ikoula** : récupérer les accès VPS auprès d'YNOV, vérifier l'accès SSH, l'OS et les ressources (RAM/CPU/disque).
+- [ ] Récupérer les accès VPS auprès d'YNOV, vérifier l'accès SSH, l'OS et les ressources (RAM/CPU/disque).
 - [ ] Mettre en place le dépôt Git d'équipe + répartition des rôles (voir §6).
 
 ---
 
-## 2. Décision structurante : AWS vs Kubernetes
+## 2. Choix de plateforme : Kubernetes (k3s) sur VPS Ikoula
 
-Tu n'as pas encore tranché. Voici la comparaison pour décider. **Une seule plateforme à choisir.**
+**Décision prise : Kubernetes.** Raisons principales :
 
-### Tableau de décision
+1. **Contrôle et indépendance** : pas de vendor lock-in AWS, stack 100 % open source (k3s, Helm, Prometheus, Grafana).
+2. **Pas besoin de HA géographique** : le projet ne requiert pas de haute disponibilité multi-zone — la résilience au niveau pod suffit pour répondre aux exigences.
+3. **Coût zéro** : le VPS est fourni par YNOV — aucun risque de facture surprise, FinOps = analyse propre du dimensionnement.
+4. **Démo plus percutante** : HPA visible en direct, Prometheus + Grafana plug-and-play (l'app expose déjà `/metrics`), self-healing < 15 s chronométrable.
+5. **Moins de complexité réseau** : un seul outillage (kubectl/Helm) au lieu de VPC/subnets/SG/IAM à câbler en 2,5 jours.
 
-| Critère | Option A — AWS (managé) | Option B — Kubernetes (VPS Ikoula) |
-|--------|--------------------------|-------------------------------------|
-| **Coût** | Free Tier, **risque de dépassement** (RDS, ALB, NAT GW coûtent vite) | **Gratuit** (VPS offert YNOV), coût = 0 → FinOps = « VPS fourni » |
-| **HA multi-AZ vraie** | ✅ native (multi-AZ ALB + ASG/ECS + RDS Multi-AZ) | ⚠️ single-node → HA = **multi-pods** seulement (pas multi-nœud) |
-| **Élasticité (CPU)** | ASG / ECS Service Auto Scaling | **HPA** (Horizontal Pod Autoscaler) — très visuel en démo |
-| **Self-healing < 15 s** | ECS task restart / ASG health | **liveness probe + restartPolicy** — très rapide, idéal |
-| **Observabilité** | CloudWatch (dashboards + alarms) | **Prometheus + Grafana** (l'app expose déjà `/metrics` !) |
-| **IaC livrable** | CloudFormation | **Helm Chart** |
-| **Image Docker** | ECR | Registry (Docker Hub / GHCR / registry local) |
-| **Courbe d'apprentissage** | Beaucoup de services à câbler (VPC, subnets, SG, IAM…) | Concepts K8s à maîtriser mais 1 seul outillage |
-| **Risque principal** | Facture inattendue + complexité réseau | Single-node = SPOF nœud (à assumer/justifier) |
-
-### 💡 Recommandation
-
-**Option B — Kubernetes (k3s) sur le VPS Ikoula**, pour ce contexte précis :
-
-1. **Coût = 0** → pas de stress facture, et la partie FinOps devient une analyse propre (coût du VPS + dimensionnement).
-2. L'app **expose déjà `/metrics` au format Prometheus** → le couple **Prometheus + Grafana** est quasi plug-and-play et donne un **dashboard live** spectaculaire pour la soutenance (gros bonus sur Observabilité + Élasticité visible).
-3. **HPA + liveness probe** rendent l'élasticité et le self-healing **directement démontrables** au jury (les 2 critères pèsent 4+3 = 7 pts).
-4. Un seul outillage (kubectl/Helm) au lieu d'une dizaine de services AWS à câbler en 2,5 jours.
-
-Le seul point à **assumer et justifier oralement** : single-node = pas de vraie HA matérielle. On répond par : multi-pods + probes + (bonus) explication de comment on passerait multi-node. Le support autorise explicitement le cluster single-node.
-
-> Le reste du plan détaille **l'option K8s**. Une annexe (§7) liste les équivalents AWS si tu pars sur A.
+> Seul point à assumer à l'oral : cluster single-node = pas de HA matérielle multi-nœud. Réponse : multi-pods + probes + explication de comment on passerait multi-node si nécessaire. Le support l'autorise explicitement.
 
 ---
 
@@ -129,7 +109,7 @@ Un traitement qui **lit la BDD** et produit un résultat exploitable. Idées tri
 ## 4. Livrables finaux (checklist de rendu)
 
 - [ ] `app/Dockerfile` optimisé + `OPTIMISATION.md`
-- [ ] IaC : **Helm Chart** (ou CloudFormation si AWS)
+- [ ] IaC : **Helm Chart**
 - [ ] Image Docker publiée sur un registry
 - [ ] **URL publique** fonctionnelle (en tête du README du dépôt)
 - [ ] **Schéma d'architecture** clair et légendé (Mermaid/Excalidraw/Draw.io)
@@ -145,7 +125,7 @@ Un traitement qui **lit la BDD** et produit un résultat exploitable. Idées tri
 
 | Phase | Tâches |
 |-------|--------|
-| **Jour 6 (matin)** | Tâche n°0 (ouverture env + repo), prise en main app en local (`docker-compose up`, tester routes & `/metrics`), choix plateforme |
+| **Jour 6 (matin)** | Tâche n°0 (ouverture env + repo), prise en main app en local (`docker-compose up`, tester routes & `/metrics`) |
 | **Jour 6 (après-midi)** | Mission 1 (Dockerfile + `.dockerignore` + `OPTIMISATION.md`), push image sur registry, install k3s |
 | **Jour 7 (matin)** | Helm Chart : Deployment + Service + Ingress + Postgres + Secrets → app accessible sur internet |
 | **Jour 7 (après-midi)** | HPA + probes, Prometheus + Grafana + dashboard, premiers load/crash tests |
@@ -166,24 +146,7 @@ Chacun pilote un axe mais **tout le monde partage l'info** (le jury interroge n'
 
 ---
 
-## 7. Annexe — Équivalents si choix AWS
-
-| Brique K8s | Équivalent AWS |
-|------------|----------------|
-| Helm Chart | Template **CloudFormation** |
-| Registry | **ECR** |
-| Deployment + HPA | **ECS Service + Service Auto Scaling** (ou ASG/EC2) |
-| Ingress | **ALB** (multi-AZ) |
-| PostgreSQL StatefulSet | **RDS PostgreSQL** (Multi-AZ pour la HA) |
-| Probes/self-healing | Health checks ECS/ALB |
-| Prometheus/Grafana | **CloudWatch** dashboards + alarms |
-| Secrets K8s | **Secrets Manager / SSM Parameter Store** |
-
-⚠️ Si AWS : surveiller en priorité **NAT Gateway, ALB, RDS** (hors free tier réel) et garder un **budget alert** actif.
-
----
-
-## 8. Préparation soutenance (40 min)
+## 7. Préparation soutenance (40 min)
 
 | Phase | Durée | À préparer |
 |-------|-------|-----------|
