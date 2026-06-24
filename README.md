@@ -21,12 +21,18 @@ Vous présenterez votre solution lors d’une soutenance de 40 minutes
 git clone <url-du-depot>
 cd capstone-dplc
 
-# 2. Lancer en local
-docker-compose up --build
+# 2. Créer le fichier d'environnement local (credentials DB)
+cp .env.example .env
 
-# 3. Vérifier
+# 3. Lancer en local (attend que db + app soient "healthy")
+docker compose up --build --wait
+
+# 4. Vérifier
 curl http://localhost:3000/          # → {"status":"ok"}
 curl http://localhost:3000/metrics   # → métriques Prometheus
+
+# 5. (optionnel) Lancer la suite de tests dans un conteneur, contre la db
+docker compose --profile test run --rm test
 ```
 
 ---
