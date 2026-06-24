@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "docker.docker",
+    "rexiasr.hadolint",
+    "jeff-hykin.better-dockerfile-syntax"
+  ]
+}
