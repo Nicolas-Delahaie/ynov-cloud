@@ -22,9 +22,9 @@
 
 > ⚠️ À lancer en priorité : la livraison d'un VPS ou la validation d'un compte AWS peut prendre plusieurs heures.
 
-- [ ] Récupérer les accès VPS Ikoula, vérifier SSH, OS, RAM/CPU/disque
-- [ ] Prise en main de l'app en local (`docker-compose up`, tester toutes les routes + `/metrics`)
-- [ ] Monter le dépôt Git d'équipe + répartition des rôles (voir [Annexe B](#annexe-b--répartition-déquipe))
+- [x] Récupérer les accès VPS Ikoula, vérifier SSH, OS, RAM/CPU/disque
+- [x] Prise en main de l'app en local (`docker-compose up`, tester toutes les routes + `/metrics`)
+- [x] Monter le dépôt Git d'équipe + répartition des rôles (voir [Annexe B](#annexe-b--répartition-déquipe))
 
 ---
 
@@ -49,7 +49,7 @@ Corriger les **5 anti-patterns** du `app/Dockerfile` actuel :
 
 ### Bloc 2 — Cluster k3s `[Jour 6 - après-midi]`
 
-- [ ] Installer **k3s** sur le VPS Ikoula (cluster single-node)
+- [x] Installer **k3s** sur le VPS Ikoula (cluster single-node)
 
 ---
 
