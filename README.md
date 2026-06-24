@@ -5,8 +5,9 @@
 En vue de la nouvelle Coupe de Monde, la FIFA a missionner votre entreprise pour moderniser son site internet utilisé pour suivre les résultats sportif du championnat et de l’héberger dans une solution Cloud ou Cloud-Native capable de s’adapter à la charge.
 
 Votre équipe a été choisit pour:
+
 - Déployer une application Node.js + PostgreSQL sur le cloud
-- Démontrer la haute disponibilité, l’élasticité, la résilience et en  l’observabilité de la platforme dans sa version modernisée.
+- Démontrer la haute disponibilité, l’élasticité, la résilience et en l’observabilité de la platforme dans sa version modernisée.
 
 Vous présenterez votre solution lors d’une soutenance de 40 minutes
 
@@ -21,12 +22,18 @@ Vous présenterez votre solution lors d’une soutenance de 40 minutes
 git clone <url-du-depot>
 cd capstone-dplc
 
-# 2. Lancer en local
-docker-compose up --build
+# 2. Créer le fichier d'environnement local (credentials DB)
+cp .env.example .env
 
-# 3. Vérifier
+# 3. Lancer en local (attend que db + app soient "healthy")
+docker compose up --build --wait
+
+# 4. Vérifier
 curl http://localhost:3000/          # → {"status":"ok"}
 curl http://localhost:3000/metrics   # → métriques Prometheus
+
+# 5. (optionnel) Lancer la suite de tests dans un conteneur, contre la db
+docker compose --profile test run --rm --build test
 ```
 
 ---
@@ -59,19 +66,19 @@ Le Dockerfile fourni est volontairement mauvais. Vous devez le réécrire selon 
 
 Choisissez **une** des deux approches :
 
-| Option A — AWS (Cloud Managé) | Option B — Kubernetes (Cloud Agnostique) |
-|-------------------------------|------------------------------------------|
+| Option A — AWS (Cloud Managé)                                            | Option B — Kubernetes (Cloud Agnostique)                                   |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
 | VPC multi-AZ, Load Balancer, Compute auto-scalé, Base de données managée | Deployment avec auto-scaling, Ingress, Probes, Base de données persistante |
-| Observabilité via CloudWatch | Observabilité via Prometheus + Grafana |
+| Observabilité via CloudWatch                                             | Observabilité via Prometheus + Grafana                                     |
 
 ### 3. Répondre aux challenges techniques
 
-| Challenge | Objectif |
-|-----------|----------|
-| **Industrialisation** | Déploiement reproductible (IaC ou Runbook rigoureux) |
-| **Mur de charge** | Votre infra doit absorber un pic de trafic sans s'effondrer |
-| **Bouton rouge** | L'application doit se rétablir automatiquement après un crash |
-| **FinOps** | Justifier le dimensionnement et estimer le coût mensuel |
+| Challenge             | Objectif                                                      |
+| --------------------- | ------------------------------------------------------------- |
+| **Industrialisation** | Déploiement reproductible (IaC ou Runbook rigoureux)          |
+| **Mur de charge**     | Votre infra doit absorber un pic de trafic sans s'effondrer   |
+| **Bouton rouge**      | L'application doit se rétablir automatiquement après un crash |
+| **FinOps**            | Justifier le dimensionnement et estimer le coût mensuel       |
 
 ### 4. Job créatif (bonus)
 
@@ -92,24 +99,24 @@ Concevez un Job qui lit les données sportives en base et produit un résultat e
 
 La soutenance est une **revue d'ingénierie en direct** — pas de PowerPoint.
 
-| Phase | Durée | Contenu |
-|-------|-------|---------|
+| Phase                | Durée  | Contenu                                                                             |
+| -------------------- | ------ | ----------------------------------------------------------------------------------- |
 | Architecture & Pitch | 10 min | Présentation du diagramme, justification des choix techniques, stratégie budgétaire |
-| Démo en direct | 10 min | Preuve que l'infra fonctionne (CI/CD ou exécution du Runbook) |
-| Crash Test du jury | 15 min | Tests automatisés pilotés par l'enseignant sur votre infrastructure |
+| Démo en direct       | 10 min | Preuve que l'infra fonctionne (CI/CD ou exécution du Runbook)                       |
+| Crash Test du jury   | 15 min | Tests automatisés pilotés par l'enseignant sur votre infrastructure                 |
 
 ---
 
 ## Grille d'évaluation (sur 20 points)
 
-| Critère | Points |
-|---------|:------:|
-| **Soutenance & Maîtrise technique orale** — Clarté, profondeur technique, réponses aux questions | **6** |
-| **Choix architecturaux & Design** — Pertinence, reproductibilité, sécurité | **5** |
-| **Élasticité & Auto-scaling** — Réaction autonome face à la charge | **4** |
-| **Résilience & Self-Healing** — Rétablissement automatique après panne | **3** |
-| **Observabilité & FinOps** — Dashboard opérationnel + estimation de coût chiffrée | **2** |
-| **Total** | **20** |
+| Critère                                                                                          | Points |
+| ------------------------------------------------------------------------------------------------ | :----: |
+| **Soutenance & Maîtrise technique orale** — Clarté, profondeur technique, réponses aux questions | **6**  |
+| **Choix architecturaux & Design** — Pertinence, reproductibilité, sécurité                       | **5**  |
+| **Élasticité & Auto-scaling** — Réaction autonome face à la charge                               | **4**  |
+| **Résilience & Self-Healing** — Rétablissement automatique après panne                           | **3**  |
+| **Observabilité & FinOps** — Dashboard opérationnel + estimation de coût chiffrée                | **2**  |
+| **Total**                                                                                        | **20** |
 
 **Bonus** (+2 pts max, plafond à 20) : Job créatif (+1) | CI/CD ou GitOps démontré (+1)
 
