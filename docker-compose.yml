@@ -1,28 +1,42 @@
-version: "3.8"
-
 services:
   app:
-    build: ./app
+    build:
+      context: ./app
+      target: prod
     ports:
       - "3000:3000"
-    environment:
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=worldcup2026
+    env_file:
+      - .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:15
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=worldcup2026
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./app/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  test:
+    build:
+      context: ./app
+      target: test
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - test
 
 volumes:
   pgdata:
