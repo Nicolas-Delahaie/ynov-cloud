@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: worldcup-postgres
+  labels:
+    app: worldcup-postgres
+spec:
+  serviceName: worldcup-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worldcup-postgres
+  template:
+    metadata:
+      labels:
+        app: worldcup-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: {{ .Values.db.user | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: worldcup-db-secret
+                  key: DB_PASSWORD
+            - name: POSTGRES_DB
+              value: {{ .Values.db.name | quote }}
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+            - name: init-sql
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.sql
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", {{ .Values.db.user | quote }}]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: init-sql
+          configMap:
+            name: worldcup-init-sql
+  volumeClaimTemplates:
+    - metadata:
+        name: pgdata
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

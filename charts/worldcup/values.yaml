@@ -1,0 +1,32 @@
+image:
+  repository: ghcr.io/nicolas-delahaie/ynov-cloud
+  tag: "v1.0.0"
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  port: 3000
+
+ingress:
+  host: worldcup.example.com  # Remplacer par l'IP ou le domaine du VPS
+
+db:
+  host: worldcup-postgres
+  port: 5432
+  user: postgres
+  password: "changeme"  # Surcharger avec --set db.password=... ou un fichier secrets
+  name: worldcup2026
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 6
+  cpuTargetPercent: 60
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"

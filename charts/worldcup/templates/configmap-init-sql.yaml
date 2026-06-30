@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: worldcup-init-sql
+  labels:
+    app: worldcup
+data:
+  init.sql: |
+{{ .Files.Get "files/init.sql" | indent 4 }}
