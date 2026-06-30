@@ -1,0 +1,16 @@
+{{- if .Values.job.enabled }}
+# Volume persistant où le CronJob écrit ses rapports horodatés.
+# Conservé entre les exécutions et indépendant du cycle de vie des pods.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: worldcup-reports
+  labels:
+    app: worldcup
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.job.storage | quote }}
+{{- end }}

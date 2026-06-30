@@ -91,11 +91,14 @@ Corriger les **5 anti-patterns** du `app/Dockerfile` actuel :
 
 ### Bloc 6 — Job créatif `[Jour 8 - matin]`
 
+> Détails et runbook : [docs/bloc6-job.md](docs/bloc6-job.md)
+
 Un traitement qui **lit la BDD** et produit un résultat exploitable.
 
-- [ ] Design du Job : diagramme + markdown explicable à l'oral
-- [ ] _(bonus)_ Job fonctionnel : **K8s CronJob** qui calcule le classement par groupe et génère un rapport (CSV/JSON/Markdown) horodaté dans un PVC
-  - Alternatives : top des votes → webhook Discord/Slack, export CSV matchs, mini-prédiction de vainqueur
+- [x] Design du Job : markdown explicable à l'oral (docs/bloc6-job.md)
+- [x] _(bonus)_ Job fonctionnel : **K8s CronJob** qui calcule le classement par groupe et le palmarès des votes, et génère un rapport (CSV/JSON/Markdown) horodaté dans un PVC — _écrit, à jouer sur le VPS_
+  - `app/jobs/report.js` (réutilise l'algo de `/api/standings`) + `cronjob-report.yaml` + `report-pvc.yaml`
+  - Alternatives possibles : top des votes → webhook Discord/Slack, export CSV matchs, mini-prédiction de vainqueur
 
 ---
 

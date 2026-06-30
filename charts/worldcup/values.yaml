@@ -31,6 +31,16 @@ resources:
     cpu: "500m"
     memory: "256Mi"
 
+# Job créatif (bloc 6)
+# CronJob qui lit la BDD et génère un rapport horodaté (classement +
+# votes) dans un PVC. Voir docs/bloc6-job.md.
+job:
+  enabled: true
+  # Planification cron (par défaut : toutes les heures à la minute 0)
+  schedule: "0 * * * *"
+  # Taille du volume persistant qui stocke les rapports
+  storage: 1Gi
+
 # Observabilité (bloc 4)
 # Active le ServiceMonitor + PrometheusRule. Nécessite les CRD du Prometheus
 # Operator (installés par kube-prometheus-stack). Voir docs/bloc4-observabilite.md.
