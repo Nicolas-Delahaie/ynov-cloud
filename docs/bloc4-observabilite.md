@@ -150,16 +150,16 @@ Le `-l app=worldcup-app` agrège les logs **de tous les réplicas** dans un seul
 > ```bash
 > # Depuis la machine de dev : pousser le code, puis se connecter au VPS
 > git push origin bloc-4
-> ssh <user>@178.170.25.230
-> cd ~/ynov-cloud && git fetch && git checkout bloc-4 && git pull
+> ssh <user>@<IP>
+> cd ~/<repo> && git fetch && git checkout bloc-4 && git pull
 > ```
 
 Toutes les commandes ci-dessous sont lancées **dans cette session SSH sur le VPS**.
 
 ```bash
-# 0. Charger les credentials depuis le .env (git-ignoré, jamais en clair dans Git)
-#    Voir .env.example pour la liste des variables (DB_PASSWORD, GRAFANA_ADMIN_PASSWORD...)
-source .env
+# 0. Charger les credentials (git-ignoré, jamais en clair dans Git)
+#    Voir deploy/.env.example pour la liste des variables
+source deploy/.env
 
 # 1. Ajouter le repo Helm de la communauté Prometheus
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -170,16 +170,15 @@ helm upgrade --install kube-prometheus-stack \
   prometheus-community/kube-prometheus-stack \
   -n monitoring --create-namespace \
   -f monitoring/values-kube-prometheus-stack.yaml \
-  --set grafana.adminPassword="$GRAFANA_ADMIN_PASSWORD" \
-  --set grafana.ingress.hosts[0]=grafana.178.170.25.230.nip.io
+  --set grafana.adminPassword="$GRAFANA_ADMIN_PASSWORD"
 
 # 3. Importer le dashboard de l'app
 kubectl apply -f monitoring/grafana-dashboard-worldcup.yaml
 
 # 4. Redéployer l'app : le ServiceMonitor + PrometheusRule sont maintenant pris en compte
 helm upgrade --install worldcup ./charts/worldcup \
-  --set db.password="$DB_PASSWORD" \
-  --set ingress.host=178.170.25.230.nip.io
+  --set image.tag="$IMAGE_TAG" \
+  --set db.password="$DB_PASSWORD"
 ```
 
 Le nom de release `kube-prometheus-stack` **doit** correspondre à `monitoring.releaseLabel` dans `values.yaml`, sinon Prometheus ignore le ServiceMonitor (voir §2).

@@ -4,3 +4,4 @@ Thumbs.db
 
 # Variables d'environnement
 .env
+deploy/.env
