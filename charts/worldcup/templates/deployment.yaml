@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worldcup-app
+  labels:
+    app: worldcup-app
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: worldcup-app
+  template:
+    metadata:
+      labels:
+        app: worldcup-app
+    spec:
+      containers:
+        - name: worldcup
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: {{ .Values.db.host | quote }}
+            - name: DB_PORT
+              value: {{ .Values.db.port | quote }}
+            - name: DB_USER
+              value: {{ .Values.db.user | quote }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: worldcup-db-secret
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              value: {{ .Values.db.name | quote }}
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | quote }}
+              memory: {{ .Values.resources.limits.memory | quote }}
+          livenessProbe:
+            httpGet:
+              path: /api/health/db
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /api/health/db
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3

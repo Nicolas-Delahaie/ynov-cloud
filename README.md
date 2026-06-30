@@ -22,7 +22,8 @@ Vous présenterez votre solution lors d’une soutenance de 40 minutes
 git clone <url-du-depot>
 cd capstone-dplc
 
-# 2. Créer le fichier d'environnement local (credentials DB)
+# 2. Créer le fichier d'environnement local
+# ! Puis modifier les valeurs du .env
 cp .env.example .env
 
 # 3. Lancer en local (attend que db + app soient "healthy")

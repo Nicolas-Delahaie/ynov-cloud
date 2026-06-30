@@ -55,13 +55,13 @@ Corriger les **5 anti-patterns** du `app/Dockerfile` actuel :
 
 ### Bloc 3 — Déploiement Helm `[Jour 7 - matin]`
 
-- [ ] Build de l'image optimisée, tag versionné, push sur registry (GHCR ou Docker Hub)
-- [ ] Helm Chart (`charts/worldcup/`) :
-  - [ ] **Deployment app** : `replicas: 2`, `resources.requests/limits` (CPU obligatoire pour HPA), `liveness` + `readiness` probes (`/api/health/db`), `restartPolicy`
-  - [ ] **PostgreSQL** : StatefulSet + PVC persistant (ou `bitnami/postgresql`), `init.sql` chargé
-  - [ ] **Service** (ClusterIP) + **Ingress** (Traefik fourni par k3s) → app accessible sur internet
-  - [ ] **HPA** : auto-scaling CPU (cible 60 %, min 2 / max 6)
-  - [ ] **Secrets** K8s pour `DB_PASSWORD` etc. (jamais en clair dans Git)
+- [x] Build de l'image optimisée, tag versionné, push sur registry (GHCR ou Docker Hub)
+- [x] Helm Chart (`charts/worldcup/`) :
+  - [x] **Deployment app** : `replicas: 2`, `resources.requests/limits` (CPU obligatoire pour HPA), `liveness` + `readiness` probes (`/api/health/db`), `restartPolicy`
+  - [x] **PostgreSQL** : StatefulSet + PVC persistant (ou `bitnami/postgresql`), `init.sql` chargé
+  - [x] **Service** (ClusterIP) + **Ingress** (Traefik fourni par k3s) → app accessible sur internet
+  - [x] **HPA** : auto-scaling CPU (cible 60 %, min 2 / max 6)
+  - [x] **Secrets** K8s pour `DB_PASSWORD` etc. (jamais en clair dans Git)
   - [ ] _(bonus)_ **HTTPS** : cert-manager + Let's Encrypt
 
 ---
