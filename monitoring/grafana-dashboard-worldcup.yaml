@@ -1,0 +1,91 @@
+# Dashboard Grafana "Worldcup 2026" chargé automatiquement par le sidecar Grafana
+# de kube-prometheus-stack (grâce au label grafana_dashboard).
+#
+#   kubectl apply -f monitoring/grafana-dashboard-worldcup.yaml
+#
+# Panels : req/s, latence p95, taux d'erreurs 5xx, CPU, mémoire, nb de pods.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: worldcup-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  worldcup.json: |
+    {
+      "title": "Worldcup 2026 — App",
+      "uid": "worldcup-app",
+      "schemaVersion": 39,
+      "timezone": "browser",
+      "refresh": "10s",
+      "time": { "from": "now-30m", "to": "now" },
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Requêtes / s (par status_code)",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total[1m])) by (status_code)",
+              "legendFormat": "{{status_code}}"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Latence p95 (s)",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "p95"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Taux d'erreurs 5xx",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))",
+              "legendFormat": "ratio 5xx"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Nombre de pods worldcup-app",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "targets": [
+            {
+              "expr": "count(up{job=\"worldcup-app\"} == 1)",
+              "legendFormat": "pods up"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "CPU par pod (cores)",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+          "targets": [
+            {
+              "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"worldcup-app.*\", container!=\"\"}[1m])) by (pod)",
+              "legendFormat": "{{pod}}"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Mémoire par pod (MiB)",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "targets": [
+            {
+              "expr": "sum(container_memory_working_set_bytes{pod=~\"worldcup-app.*\", container!=\"\"}) by (pod) / 1024 / 1024",
+              "legendFormat": "{{pod}}"
+            }
+          ]
+        }
+      ]
+    }

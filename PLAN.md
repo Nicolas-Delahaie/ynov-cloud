@@ -68,10 +68,14 @@ Corriger les **5 anti-patterns** du `app/Dockerfile` actuel :
 
 ### Bloc 4 — Observabilité `[Jour 7 - après-midi]`
 
-- [ ] **Prometheus** : scrape `/metrics` de l'app
-- [ ] **Grafana** : dashboard avec req/s, latence, CPU, mémoire, nb de pods
-- [ ] **Logs** centralisés (au minimum `kubectl logs` agrégés ; bonus : Loki)
-- [ ] **Alerting** (Alertmanager : alerte si app down ou CPU élevé)
+> Détails, justifications et runbook VPS : [docs/bloc4-observabilite.md](docs/bloc4-observabilite.md)
+> Manifests **écrits**, à **déployer/tester sur le VPS** (k3s) — rien ne se valide en local.
+
+- [x] **Prometheus** : `ServiceMonitor` dans le chart (via kube-prometheus-stack) — _écrit_
+- [x] **Grafana** : dashboard req/s, latence p95, taux 5xx, CPU, mémoire, nb de pods (ConfigMap auto-importée) — _écrit_
+- [x] **Logs** centralisés (`kubectl logs -l app=worldcup-app -f --prefix` ; bonus Loki documenté, non déployé)
+- [x] **Alerting** (`PrometheusRule` : app down, taux 5xx élevé, latence p95 dégradée) — _écrit_
+- [ ] **Déployé + testé sur le VPS** (voir checklist « Statut de validation » du doc)
 
 ---
 

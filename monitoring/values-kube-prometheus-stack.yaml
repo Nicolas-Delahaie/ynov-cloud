@@ -1,0 +1,74 @@
+# Values pour le chart prometheus-community/kube-prometheus-stack.
+# Stack d'observabilité du bloc 4 : Prometheus + Grafana + Alertmanager.
+#
+# Installation :
+#   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#   helm repo update
+#   helm upgrade --install kube-prometheus-stack \
+#     prometheus-community/kube-prometheus-stack \
+#     -n monitoring --create-namespace \
+#     -f monitoring/values-kube-prometheus-stack.yaml \
+#     --set grafana.adminPassword=<MOT_DE_PASSE>
+#
+# Le nom de release "kube-prometheus-stack" correspond au label
+# monitoring.releaseLabel du chart worldcup → le ServiceMonitor et le
+# PrometheusRule de l'app sont automatiquement sélectionnés.
+
+# --- Allègement pour un VPS single-node ---
+# Composants de monitoring du control-plane non pertinents en single-node k3s.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    # On garde la sélection par label release (défaut) — le ServiceMonitor de
+    # l'app porte release: kube-prometheus-stack, il est donc bien scrapé.
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 512Mi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+
+grafana:
+  # adminPassword passé via --set (jamais en clair dans Git)
+  defaultDashboardsEnabled: true
+  # Charge automatiquement les dashboards depuis les ConfigMap labellisés
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+  # Exposition de Grafana via l'Ingress Traefik de k3s.
+  # Remplacer le host par <IP_DU_VPS>.nip.io au déploiement (--set).
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - grafana.worldcup.example.com
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 256Mi

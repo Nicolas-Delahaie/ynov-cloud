@@ -1,0 +1,48 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: worldcup-app
+  labels:
+    app: worldcup-app
+    release: {{ .Values.monitoring.releaseLabel }}
+spec:
+  groups:
+    - name: worldcup-app.rules
+      rules:
+        # L'app ne répond plus : aucune cible "up" pour le ServiceMonitor.
+        - alert: WorldcupAppDown
+          expr: sum(up{job="worldcup-app"}) == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "L'application Worldcup est down"
+            description: "Aucun pod worldcup-app n'expose /metrics depuis 1 minute."
+
+        # Taux d'erreurs 5xx trop élevé sur les 5 dernières minutes.
+        - alert: WorldcupHigh5xxRate
+          expr: >-
+            sum(rate(http_requests_total{status_code=~"5.."}[5m]))
+            / sum(rate(http_requests_total[5m]))
+            > {{ .Values.monitoring.alerts.error5xxRatio }}
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Taux d'erreurs 5xx élevé"
+            description: "Plus de {{ .Values.monitoring.alerts.error5xxRatio }} des requêtes renvoient un 5xx depuis 2 minutes."
+
+        # Latence p95 dégradée (saturation, ex. sous charge /api/compute).
+        - alert: WorldcupHighLatencyP95
+          expr: >-
+            histogram_quantile(0.95,
+              sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+            > {{ .Values.monitoring.alerts.latencyP95Seconds }}
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Latence p95 dégradée"
+            description: "La latence p95 dépasse {{ .Values.monitoring.alerts.latencyP95Seconds }}s depuis 2 minutes."
+{{- end }}
