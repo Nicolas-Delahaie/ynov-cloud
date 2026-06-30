@@ -17,6 +17,7 @@ CMD ["npm", "test"]
 
 # --- prod: image finale, prod uniquement, non-root ---
 FROM node:20-alpine AS prod
+LABEL org.opencontainers.image.source=https://github.com/Nicolas-Delahaie/ynov-cloud
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
