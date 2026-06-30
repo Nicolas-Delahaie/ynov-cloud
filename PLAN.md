@@ -75,7 +75,7 @@ Corriger les **5 anti-patterns** du `app/Dockerfile` actuel :
 - [x] **Grafana** : dashboard req/s, latence p95, taux 5xx, CPU, mémoire, nb de pods (ConfigMap auto-importée) — _écrit_
 - [x] **Logs** centralisés (`kubectl logs -l app=worldcup-app -f --prefix` ; bonus Loki documenté, non déployé)
 - [x] **Alerting** (`PrometheusRule` : app down, taux 5xx élevé, latence p95 dégradée) — _écrit_
-- [ ] **Déployé + testé sur le VPS** (voir checklist « Statut de validation » du doc)
+- [x] **Déployé + testé sur le VPS** (cible `up=1`, dashboard live, 3 alertes chargées, HA prouvée en kill — voir « Statut de validation » du doc)
 
 ---
 

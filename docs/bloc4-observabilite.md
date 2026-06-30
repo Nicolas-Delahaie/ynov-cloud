@@ -157,6 +157,10 @@ Le `-l app=worldcup-app` agrège les logs **de tous les réplicas** dans un seul
 Toutes les commandes ci-dessous sont lancées **dans cette session SSH sur le VPS**.
 
 ```bash
+# 0. Charger les credentials depuis le .env (git-ignoré, jamais en clair dans Git)
+#    Voir .env.example pour la liste des variables (DB_PASSWORD, GRAFANA_ADMIN_PASSWORD...)
+source .env
+
 # 1. Ajouter le repo Helm de la communauté Prometheus
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
@@ -166,7 +170,7 @@ helm upgrade --install kube-prometheus-stack \
   prometheus-community/kube-prometheus-stack \
   -n monitoring --create-namespace \
   -f monitoring/values-kube-prometheus-stack.yaml \
-  --set grafana.adminPassword=<MOT_DE_PASSE> \
+  --set grafana.adminPassword="$GRAFANA_ADMIN_PASSWORD" \
   --set grafana.ingress.hosts[0]=grafana.178.170.25.230.nip.io
 
 # 3. Importer le dashboard de l'app
@@ -174,7 +178,7 @@ kubectl apply -f monitoring/grafana-dashboard-worldcup.yaml
 
 # 4. Redéployer l'app : le ServiceMonitor + PrometheusRule sont maintenant pris en compte
 helm upgrade --install worldcup ./charts/worldcup \
-  --set db.password=<MOT_DE_PASSE> \
+  --set db.password="$DB_PASSWORD" \
   --set ingress.host=178.170.25.230.nip.io
 ```
 
@@ -190,47 +194,60 @@ kubectl -n monitoring get pods
 
 # b) Le ServiceMonitor et la PrometheusRule de l'app existent
 kubectl get servicemonitor,prometheusrule -l app=worldcup-app
+```
 
-# c) Prometheus scrape bien l'app : la cible doit être "up"=1
-#    (on interroge l'API de Prometheus depuis l'intérieur du cluster)
-kubectl -n monitoring exec -it sts/prometheus-kube-prometheus-stack-prometheus -c prometheus -- \
-  wget -qO- 'http://localhost:9090/api/v1/query?query=up{job="worldcup-app"}' | grep -o '"value":\[[^]]*\]'
-#   → attendu : deux séries à la valeur "1" (un par réplica)
+> ⚠️ Le conteneur Prometheus n'embarque **ni `wget` ni `curl`** : on n'interroge pas son API via `kubectl exec`. On ouvre un **port-forward** et on interroge depuis le VPS (qui a `curl` ; sinon `apt install -y curl`).
+
+```bash
+# Ouvrir le tunnel vers Prometheus (en arrière-plan)
+kubectl -n monitoring port-forward svc/kube-prometheus-stack-prometheus 9090:9090 >/tmp/pf.log 2>&1 &
+sleep 2
+
+# c) Prometheus scrape bien l'app : la cible doit être "up"=1 (une série par réplica)
+#    -G --data-urlencode : curl encode la requête (les {, }, " ne passent pas bruts dans l'URL)
+curl -s -G http://localhost:9090/api/v1/query \
+  --data-urlencode 'query=up{job="worldcup-app"}' | grep -o '"value":\[[^]]*\]'
+#   → attendu : deux séries à la valeur "1"
 
 # d) Les règles d'alerte sont chargées
-kubectl -n monitoring exec -it sts/prometheus-kube-prometheus-stack-prometheus -c prometheus -- \
-  wget -qO- 'http://localhost:9090/api/v1/rules' | grep -o '"name":"Worldcup[^"]*"'
+curl -s 'http://localhost:9090/api/v1/rules' | grep -o '"name":"Worldcup[^"]*"'
 #   → attendu : WorldcupAppDown, WorldcupHigh5xxRate, WorldcupHighLatencyP95
 
 # e) Grafana répond (Ingress Traefik), depuis le VPS
 curl -sI http://grafana.178.170.25.230.nip.io | head -1   # → HTTP/1.1 200 OK (ou 302 vers /login)
+
+# Fermer le tunnel
+kill %1
 ```
 
-Depuis un poste extérieur (démo), Grafana est sur **http://grafana.178.170.25.230.nip.io** (admin / `<MOT_DE_PASSE>`).
+Depuis un poste extérieur (démo), Grafana est sur **http://grafana.178.170.25.230.nip.io** (admin / `$GRAFANA_ADMIN_PASSWORD`).
 
 ### Test de la chaîne d'alerte (sur le VPS)
 
 ```bash
-# Provoquer un crash → l'alerte WorldcupAppDown doit passer en "firing" si les 2 pods tombent,
-# sinon on observe le self-healing dans le dashboard.
+# Provoquer un crash → on observe le self-healing dans le dashboard ; si les 2 pods
+# tombent, l'alerte WorldcupAppDown passe en "firing".
 kubectl exec deploy/worldcup-app -- wget -qO- --post-data='' http://localhost:3000/api/admin/kill || true
 
-# Vérifier l'état des alertes
-kubectl -n monitoring exec -it sts/prometheus-kube-prometheus-stack-prometheus -c prometheus -- \
-  wget -qO- 'http://localhost:9090/api/v1/alerts' | grep -o '"alertname":"[^"]*","[^}]*"state":"[^"]*"'
+# Vérifier l'état des alertes (via le même tunnel port-forward que ci-dessus)
+kubectl -n monitoring port-forward svc/kube-prometheus-stack-prometheus 9090:9090 >/tmp/pf.log 2>&1 &
+sleep 2
+curl -s 'http://localhost:9090/api/v1/alerts' | grep -o '"alertname":"[^"]*"'
+kill %1
 ```
 
 Comme pour le mot de passe BDD au bloc 3, le **mot de passe Grafana n'est jamais en clair dans Git** : il est passé via `--set grafana.adminPassword=...` et stocké côté cluster dans un Secret.
 
 ### Statut de validation
 
-Ces manifests **n'ont pas encore été appliqués/testés** : ils doivent l'être en SSH sur le VPS en suivant ce runbook (pas d'exécution possible depuis une machine de dev). À cocher après passage sur le serveur :
+Déployé et testé en SSH sur le VPS (k3s single-node) :
 
-- [ ] `kube-prometheus-stack` installé (`kubectl -n monitoring get pods` tous Running)
-- [ ] cible `worldcup-app` en `up=1` dans Prometheus (vérif. c)
-- [ ] dashboard « Worldcup 2026 — App » visible dans Grafana
-- [ ] les 3 alertes chargées (vérif. d)
-- [ ] `helm template ./charts/worldcup` rend bien le ServiceMonitor + PrometheusRule sans erreur
+- [x] `kube-prometheus-stack` installé (`kubectl -n monitoring get pods` tous Running)
+- [x] cible `worldcup-app` en `up=1` dans Prometheus (vérif. c)
+- [x] dashboard « Worldcup 2026 — App » visible dans Grafana, avec données live
+- [x] les 3 alertes chargées : `WorldcupAppDown`, `WorldcupHigh5xxRate`, `WorldcupHighLatencyP95` (vérif. d)
+- [x] HA démontrée en live : kill d'un pod (`/api/admin/kill`) → l'app reste UP via le 2ᵉ réplica
+- [x] chaîne Alertmanager fonctionnelle (alerte `Watchdog` en firing)
 
 ---
 
