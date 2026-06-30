@@ -1,0 +1,18 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: worldcup-app
+  labels:
+    app: worldcup-app
+    # Sélectionné par Prometheus via serviceMonitorSelector (label release)
+    release: {{ .Values.monitoring.releaseLabel }}
+spec:
+  selector:
+    matchLabels:
+      app: worldcup-app
+  endpoints:
+    - port: http              # nom du port défini dans le Service
+      path: /metrics
+      interval: {{ .Values.monitoring.scrapeInterval }}
+{{- end }}

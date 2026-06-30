@@ -30,3 +30,18 @@ resources:
   limits:
     cpu: "500m"
     memory: "256Mi"
+
+# Observabilité (bloc 4)
+# Active le ServiceMonitor + PrometheusRule. Nécessite les CRD du Prometheus
+# Operator (installés par kube-prometheus-stack). Voir docs/bloc4-observabilite.md.
+monitoring:
+  enabled: true
+  # Intervalle de scrape de /metrics par Prometheus
+  scrapeInterval: 15s
+  # Label ajouté au ServiceMonitor/PrometheusRule pour que Prometheus les sélectionne
+  releaseLabel: kube-prometheus-stack
+  alerts:
+    # Seuil de latence p95 (secondes) au-delà duquel on alerte
+    latencyP95Seconds: 1
+    # Seuil de taux d'erreurs 5xx (ratio) au-delà duquel on alerte
+    error5xxRatio: 0.05
