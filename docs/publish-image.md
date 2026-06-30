@@ -13,13 +13,11 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u nicolas-delahaie --password-stdin
 ```
 
 ```bash
-# 2. Build + tag
+# 2. Build + push
 VERSION=v1.0.0
 IMAGE=ghcr.io/nicolas-delahaie/ynov-cloud
-docker build --target prod -t $IMAGE:$VERSION ./app
-
-# 3. Push
-docker push $IMAGE:$VERSION
+VPS_PLATFORM=linux/amd64
+docker buildx build --platform $VPS_PLATFORM --target prod -t $IMAGE:$VERSION --push ./app
 ```
 
 ## Après le premier push : rendre le package public
