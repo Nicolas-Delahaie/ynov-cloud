@@ -13,11 +13,11 @@ if (pg.types && pg.types.setTypeParser) {
 
 // Configuration du pool PostgreSQL
 const pool = new Pool({
-  host: process.env.DB_HOST || 'db',
-  port: parseInt(process.env.DB_PORT, 10) || 5432,
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'worldcup2026',
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT, 10),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 // ============================================================
@@ -414,9 +414,9 @@ app.post('/api/data', async (req, res) => {
 const PORT = 3000;
 
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  pool.query('SELECT 1')
+    .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
+    .catch(err => { console.error(`FATAL: ${err.message}`); process.exit(1); });
 }
 
 // Export pour les tests et les autres modules

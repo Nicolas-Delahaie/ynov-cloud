@@ -17,9 +17,9 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:15-alpine
+          image: {{ .Values.db.image }}
           ports:
-            - containerPort: 5432
+            - containerPort: {{ .Values.db.port }}
           env:
             - name: POSTGRES_USER
               value: {{ .Values.db.user | quote }}

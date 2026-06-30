@@ -19,7 +19,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 3000
+            - containerPort: {{ .Values.service.port }}
           env:
             - name: DB_HOST
               value: {{ .Values.db.host | quote }}
@@ -44,14 +44,14 @@ spec:
           livenessProbe:
             httpGet:
               path: /api/health/db
-              port: 3000
+              port: {{ .Values.service.port }}
             initialDelaySeconds: 15
             periodSeconds: 10
             failureThreshold: 6
           readinessProbe:
             httpGet:
               path: /api/health/db
-              port: 3000
+              port: {{ .Values.service.port }}
             initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 3
