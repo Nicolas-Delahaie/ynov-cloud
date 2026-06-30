@@ -65,7 +65,7 @@ grafana:
     enabled: true
     ingressClassName: traefik
     hosts:
-      - grafana.worldcup.example.com
+      - grafana.178.170.25.230.nip.io
   resources:
     requests:
       cpu: 50m
