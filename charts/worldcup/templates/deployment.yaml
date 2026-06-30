@@ -47,7 +47,7 @@ spec:
               port: 3000
             initialDelaySeconds: 15
             periodSeconds: 10
-            failureThreshold: 3
+            failureThreshold: 6
           readinessProbe:
             httpGet:
               path: /api/health/db

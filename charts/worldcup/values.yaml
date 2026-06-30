@@ -9,13 +9,13 @@ service:
   port: 3000
 
 ingress:
-  host: worldcup.example.com  # Remplacer par l'IP ou le domaine du VPS
+  host: ""  # Obligatoire : --set ingress.host=<IP>.nip.io
 
 db:
   host: worldcup-postgres
   port: 5432
   user: postgres
-  password: "changeme"  # Surcharger avec --set db.password=... ou un fichier secrets
+  password: ""  # Obligatoire : --set db.password=<MOT_DE_PASSE>
   name: worldcup2026
 
 hpa:

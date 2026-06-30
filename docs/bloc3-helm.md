@@ -69,7 +69,7 @@ helm upgrade --install worldcup ./charts/worldcup \
   --set ingress.host=<IP_OU_DOMAINE_DU_VPS>
 ```
 
-**Pourquoi cette approche ?** Si le mot de passe était dans `values.yaml`, il serait versionné dans Git — visible par quiconque a accès au repo, maintenant et dans tout l'historique. En le passant via `--set`, il n'existe que dans le `Secret` Kubernetes côté cluster.
+**Pourquoi cette approche ?** Les champs `db.password` et `ingress.host` sont vides (`""`) dans `values.yaml` — ils n'ont pas de valeur par défaut utilisable. Cela force à les fournir explicitement via `--set`, et garantit qu'aucun mot de passe ni URL de production ne se retrouve versionné dans Git. En le passant via `--set`, il n'existe que dans le `Secret` Kubernetes côté cluster.
 
 En interne, Kubernetes stocke ce mot de passe dans un objet `Secret` de type `Opaque`. Le pod le consomme via `valueFrom.secretKeyRef` — il n'apparaît jamais en clair dans les manifests déployés. `kubectl get secret worldcup-db-secret -o yaml` affiche une valeur encodée en base64, pas le mot de passe lui-même.
 
@@ -81,6 +81,8 @@ PostgreSQL est déployé comme un `StatefulSet` (et non un `Deployment`) pour de
 
 - **Identité stable** : contrairement à un `Deployment` dont les pods ont des noms aléatoires, un `StatefulSet` garantit que le pod s'appelle toujours `worldcup-postgres-0`. Ça permet de configurer `DB_HOST=worldcup-postgres` de façon fiable — ce nom DNS résout toujours vers le bon pod.
 - **PVC persistant** : le `volumeClaimTemplates` crée automatiquement un `PersistentVolumeClaim` de 1 Gi via le `local-path-provisioner` installé par k3s. Les données PostgreSQL survivent aux redémarrages de pod ou de node — sans ça, toutes les données seraient perdues à chaque redémarrage.
+
+On utilise l'image `postgres:15-alpine` : tag mineur stable (pas de mise à jour imprévue de 15 → 16), variante alpine (~50 Mo vs ~400 Mo) — cohérent avec l'approche `node:20-alpine` du Dockerfile.
 
 Le script `init.sql` (48 équipes + résultats de matchs) est monté via un `ConfigMap` dans `/docker-entrypoint-initdb.d/`. PostgreSQL exécute automatiquement tous les fichiers de ce répertoire à la **création initiale** de la base — c'est le mécanisme natif de l'image officielle `postgres`.
 
