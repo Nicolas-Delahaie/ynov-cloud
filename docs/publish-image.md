@@ -21,3 +21,13 @@ docker build --target prod -t $IMAGE:$VERSION ./app
 # 3. Push
 docker push $IMAGE:$VERSION
 ```
+
+## Après le premier push : rendre le package public
+
+> À faire **une seule fois** — le réglage est persistant pour tous les push suivants.
+
+1. Aller sur [github.com/users/nicolas-delahaie/packages](https://github.com/users/nicolas-delahaie/packages)
+2. Cliquer sur le package `ynov-cloud`
+3. **Package settings** (colonne de droite) → **Change visibility** → **Public** → confirmer
+
+**Pourquoi ?** k3s doit pouvoir puller l'image sans secret d'authentification configuré dans le cluster. Un package privé nécessiterait un `imagePullSecret` dans chaque déploiement Helm.
