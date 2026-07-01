@@ -50,12 +50,12 @@ La version publiée est lue dans le champ `version` de [`app/package.json`](../a
 
 Le job `version-check` compare la version courante à celle du **commit parent** :
 
-| Situation                                    | Comportement CI                                   |
-| -------------------------------------------- | ------------------------------------------------- |
-| Version **inchangée**                        | ✅ Pas de publication (sortie propre, pas d'image) |
-| Version **strictement supérieure** (semver)  | ✅ Build + push de l'image                          |
-| Version **inférieure ou égale** (régression) | ❌ CI rouge — publication bloquée                   |
-| Tag `v<version>` **déjà présent sur GHCR**   | ❌ CI rouge — incrémente la version                |
+| Situation                                    | Comportement CI                                 |
+| -------------------------------------------- | ----------------------------------------------- |
+| Version **inchangée**                        | Pas de publication (sortie propre, pas d'image) |
+| Version **strictement supérieure** (semver)  | Build + push de l'image                         |
+| Version **inférieure ou égale** (régression) | CI rouge — publication bloquée                  |
+| Tag `v<version>` **déjà présent sur GHCR**   | CI rouge — incrémente la version                |
 
 La comparaison est faite en semver (`sort -V`), donc `1.10.0 > 1.9.0`.
 
@@ -76,7 +76,26 @@ La CI prend le relais : vérif d'incrément → build (`target prod`, `linux/amd
 
 ### Authentification
 
-Aucun secret à configurer : le workflow utilise le `GITHUB_TOKEN` intégré (permission `packages: write`). Le `docker login ghcr.io` manuel n'est nécessaire que pour la méthode manuelle.
+Le workflow utilise le `GITHUB_TOKEN` intégré (permission `packages: write` déclarée dans le fichier). **Deux réglages manuels sont nécessaires une seule fois** :
+
+#### 1. Activer les permissions en écriture sur le dépôt
+
+1. Aller dans **Settings → Actions → General** du dépôt GitHub
+2. Section **Workflow permissions** → sélectionner **"Read and write permissions"**
+3. Enregistrer
+
+#### 2. Lier le package GHCR au dépôt
+
+> Nécessaire si le package a déjà été créé manuellement (premier push via CLI). Sans ce lien, le `GITHUB_TOKEN` n'a pas accès en écriture au package.
+
+1. Aller sur `github.com/users/nicolas-delahaie/packages/container/ynov-cloud/settings`
+2. Section **"Manage Actions access"** → **"Add repository"**
+3. Sélectionner `Nicolas-Delahaie/ynov-cloud` → rôle **Write** → confirmer
+4. Laisser cochée l'option **"Inherit access from source repository (recommended)"** — les permissions du package suivront automatiquement celles du dépôt sans gestion séparée
+
+Sans ce lien, GitHub Actions retourne `permission_denied: write_package` même avec `packages: write` dans le YAML et les Workflow permissions activées.
+
+> Le `docker login ghcr.io` manuel n'est nécessaire que pour la méthode manuelle (PAT dans `.env`).
 
 ### Déclenchement manuel de secours
 
