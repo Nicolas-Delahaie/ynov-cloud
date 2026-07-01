@@ -10,18 +10,26 @@ permissions:
   contents: read
   packages: write
 
-env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/ynov-cloud
-
 jobs:
   build-push:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set lowercase image name
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/ynov-cloud" >> "$GITHUB_ENV"
+
       - name: Read version
         id: version
         run: echo "value=$(node -p "require('./app/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Validate required variables
+        run: |
+          [[ -n "$IMAGE" ]] || { echo "::error::IMAGE is empty"; exit 1; }
+          [[ "$IMAGE" == "$( echo "$IMAGE" | tr '[:upper:]' '[:lower:]' )" ]] || { echo "::error::IMAGE contains uppercase: $IMAGE"; exit 1; }
+          [[ -n "${{ steps.version.outputs.value }}" ]] || { echo "::error::version not found in app/package.json"; exit 1; }
+          echo "IMAGE=$IMAGE"
+          echo "VERSION=${{ steps.version.outputs.value }}"
 
       - uses: docker/login-action@v3
         with:
