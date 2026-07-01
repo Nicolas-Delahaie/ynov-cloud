@@ -84,8 +84,10 @@ Corriger les **5 anti-patterns** du `app/Dockerfile` actuel :
 À répéter à blanc avant la soutenance :
 
 - [x] **Élasticité** : `hey`/`k6` sur `/api/compute` → voir l'HPA créer des pods (`tests/k6-load-test.js`)
-- [x] **Self-healing** : `POST /api/admin/kill` → pod recréé **< 15 s** — mesuré : 1 037 ms (`tests/validate.sh selfhealing`)
-- [x] **HA** : supprimer un pod → l'autre absorbe le trafic — mesuré : 10/10 requêtes OK (`tests/validate.sh ha`)
+- [x] **Self-healing** : `POST /api/admin/kill` → pod recréé **< 15 s** (`tests/validate.sh selfhealing`)
+- [x] **HA** : supprimer un pod → l'autre absorbe le trafic (`tests/validate.sh ha`)
+
+Derniers résultats mesurés : voir [docs/bloc5-validation.md](docs/bloc5-validation.md#résultats).
 
 ---
 
