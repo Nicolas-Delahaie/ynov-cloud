@@ -84,13 +84,6 @@ flowchart TB
 | **CronJob report** | Lit la BDD toutes les heures, écrit un rapport horodaté dans un PVC | `docs/bloc6-job.md` |
 | **kube-prometheus-stack** | Prometheus scrape `/metrics` via ServiceMonitor, Grafana affiche le dashboard, PrometheusRule porte 3 alertes | Dashboard live pendant le crash-test |
 
-## Résilience et élasticité (résumé)
-
-- **Haute dispo (niveau pod)** : `replicaCount: 2` + probes → un pod down n'interrompt pas le service.
-- **Self-healing** : `POST /api/admin/kill` → liveness probe échoue → K8s recrée le pod **< 15 s**.
-- **Élasticité** : HPA sur CPU (`requests.cpu: 100m`, cible 60 %) → `/api/compute` sature le CPU → scale up visible.
-- **Limite assumée** : single-node, pas de HA matérielle. Migration triviale (même chart, kubeconfig EKS multi-AZ).
-
 ## Sources (single source of truth)
 
 - Chart Helm : [`charts/worldcup/`](../charts/worldcup) — valeurs dans [`values.yaml`](../charts/worldcup/values.yaml)

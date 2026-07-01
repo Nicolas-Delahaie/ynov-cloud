@@ -114,7 +114,7 @@ Un traitement qui **lit la BDD** et produit un résultat exploitable.
 - [x] **Schéma d'architecture** clair et légendé (Mermaid) — [docs/architecture.md](docs/architecture.md)
 - [x] **Estimation de coût chiffrée** (FinOps) — tableau de coût mensuel justifié — [docs/finops.md](docs/finops.md)
 - [x] **README** à jour : URL publique + accès dashboards + commande de déploiement
-- [x] **Support de soutenance** : README autoportant (archi, garanties + crash-tests, FinOps) + [docs/argumentaire-soutenance.md](docs/argumentaire-soutenance.md) pour les réponses jury
+- [x] **Support de soutenance** : README (point d'entrée) → [docs/architecture.md](docs/architecture.md), [docs/finops.md](docs/finops.md), [docs/argumentaire-soutenance.md](docs/argumentaire-soutenance.md)
 - [ ] **Répétition de la démo** à blanc : load test + chaos test + chrono self-healing — **à jouer sur le VPS**
 
 ---
@@ -153,17 +153,7 @@ Chacun pilote un axe mais **tout le monde partage l'info** (le jury interroge n'
 5. **Moins de complexité réseau** : un seul outillage (kubectl/Helm) au lieu de VPC/subnets/SG/IAM à câbler en 2,5 jours
 
 > Point à assumer à l'oral : cluster single-node = pas de HA matérielle multi-nœud. Réponse : multi-pods + probes + explication de comment on passerait multi-node si nécessaire. Le support l'autorise explicitement.
-
----
-
-## Annexe D — Structure soutenance (40 min)
-
-| Phase              | Durée  | À préparer                                                   |
-| ------------------ | ------ | ------------------------------------------------------------ |
-| Présentation orale | 10 min | Schéma d'archi, justification des choix, trade-offs, FinOps  |
-| Démo technique     | 10 min | URL publique, déploiement (Helm/CI-CD), métriques, dashboard |
-| Crash tests (jury) | 15 min | App qui tient sous charge + revient seule après kill         |
-
-**Ce qui compte le plus (dixit l'enseignant)** : savoir **expliquer et justifier** les choix et répondre aux questions. Même incomplet, valoriser la méthode et ce qui est déployé.
-
+>
+> **Ce qui compte le plus (dixit l'enseignant)** : savoir **expliquer et justifier** les choix et répondre aux questions. Même incomplet, valoriser la méthode et ce qui est déployé.
+>
 > Prioriser ce qui rapporte des points : Archi 5 + Élasticité 4 + Résilience 3 avant le bonus.
