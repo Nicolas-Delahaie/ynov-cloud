@@ -111,26 +111,26 @@ Un traitement qui **lit la BDD** et produit un résultat exploitable.
 
 ### Bloc 8 — Finitions & soutenance `[Jour 8 - après-midi]`
 
-- [ ] **Schéma d'architecture** clair et légendé (Mermaid / Excalidraw / Draw.io)
-- [ ] **Estimation de coût chiffrée** (FinOps) — tableau de coût mensuel justifié
-- [ ] **README** à jour : URL publique en tête, accès dashboards, commande de déploiement
-- [ ] **Support de soutenance** (format libre)
-- [ ] **Répétition de la démo** à blanc : load test + chaos test + chrono self-healing
+- [x] **Schéma d'architecture** clair et légendé (Mermaid) — [docs/architecture.md](docs/architecture.md)
+- [x] **Estimation de coût chiffrée** (FinOps) — tableau de coût mensuel justifié — [docs/finops.md](docs/finops.md)
+- [x] **README** à jour : URL publique + accès dashboards + commande de déploiement
+- [x] **Support de soutenance** (script 40 min + réponses jury) — [docs/soutenance.md](docs/soutenance.md)
+- [ ] **Répétition de la démo** à blanc : load test + chaos test + chrono self-healing — checklist prête ([docs/soutenance.md](docs/soutenance.md#5-checklist-de-répétition-à-blanc-avant-le-jour-j)), **à jouer sur le VPS**
 
 ---
 
 ## Annexe A — Checklist livrables finaux
 
-- [ ] `app/Dockerfile` optimisé + `OPTIMISATION.md`
-- [ ] IaC : Helm Chart (`charts/worldcup/`)
-- [ ] Image Docker publiée sur un registry
-- [ ] URL publique fonctionnelle (en tête du README)
-- [ ] Schéma d'architecture clair et légendé
-- [ ] Dashboard d'observabilité + alerting
-- [ ] Estimation de coût chiffrée (FinOps)
-- [ ] Design du Job (+ Job fonctionnel si bonus)
-- [ ] README dépôt à jour
-- [ ] Support de soutenance
+- [x] `app/Dockerfile` optimisé + `OPTIMISATION.md`
+- [x] IaC : Helm Chart (`charts/worldcup/`)
+- [x] Image Docker publiée sur un registry
+- [x] URL publique fonctionnelle (en tête du README)
+- [x] Schéma d'architecture clair et légendé
+- [x] Dashboard d'observabilité + alerting
+- [x] Estimation de coût chiffrée (FinOps)
+- [x] Design du Job (+ Job fonctionnel si bonus)
+- [x] README dépôt à jour
+- [x] Support de soutenance
 
 ---
 
