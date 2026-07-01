@@ -104,7 +104,7 @@ Un traitement qui **lit la BDD** et produit un résultat exploitable.
 
 ### Bloc 7 — CI/CD `[Jour 8 - matin]` _(bonus +1 pt)_
 
-- [x] GitHub Actions : `docker build & push` automatisé sur GHCR avec **vérification d'incrément de version semver** (`.github/workflows/publish-image.yml`, doc dans [docs/publish-image.md](docs/publish-image.md))
+- [x] GitHub Actions : `docker build & push` automatisé sur GHCR à chaque push sur `main` (`.github/workflows/publish-image.yml`, doc dans [docs/publish-image.md](docs/publish-image.md))
 - [ ] _(suite possible)_ étape `helm upgrade` (create/update/destroy démontrable)
 
 ---
