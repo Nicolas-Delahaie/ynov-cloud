@@ -1,0 +1,62 @@
+{{- if .Values.job.enabled }}
+# CronJob "Job créatif" (bloc 6) : génère périodiquement un rapport
+# (classement par groupe + palmarès des votes) à partir de la BDD.
+# Réutilise la MÊME image que l'app — seule la commande change.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: worldcup-report
+  labels:
+    app: worldcup
+spec:
+  schedule: {{ .Values.job.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      # Ne pas réessayer indéfiniment en cas d'échec
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: worldcup
+            component: report
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: report
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["node", "jobs/report.js"]
+              env:
+                - name: DB_HOST
+                  value: {{ .Values.db.host | quote }}
+                - name: DB_PORT
+                  value: {{ .Values.db.port | quote }}
+                - name: DB_USER
+                  value: {{ .Values.db.user | quote }}
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: worldcup-db-secret
+                      key: DB_PASSWORD
+                - name: DB_NAME
+                  value: {{ .Values.db.name | quote }}
+                - name: OUTPUT_DIR
+                  value: /reports
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "200m"
+                  memory: "128Mi"
+              volumeMounts:
+                - name: reports
+                  mountPath: /reports
+          volumes:
+            - name: reports
+              persistentVolumeClaim:
+                claimName: worldcup-reports
+{{- end }}
