@@ -1,13 +1,9 @@
 name: Publish image to GHCR
 
-# Publie automatiquement l'image Docker sur GHCR quand la version de
-# app/package.json est incrémentée (voir docs/publish-image.md).
 on:
   push:
     branches: [main]
-    paths:
-      - "app/**"
-      - ".github/workflows/publish-image.yml"
+    paths: ["app/**"]
   workflow_dispatch:
 
 permissions:
@@ -18,84 +14,31 @@ env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/ynov-cloud
 
 jobs:
-  version-check:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.check.outputs.version }}
-      publish: ${{ steps.check.outputs.publish }}
-    steps:
-      - name: Checkout (historique complet pour comparer au commit parent)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Vérifier l'incrément de version
-        id: check
-        run: |
-          set -euo pipefail
-
-          CUR="$(node -p "require('./app/package.json').version")"
-          echo "Version courante : $CUR"
-
-          # Version au commit parent (la précédente). Absente au tout premier commit.
-          if git cat-file -e "HEAD^:app/package.json" 2>/dev/null; then
-            PREV="$(git show HEAD^:app/package.json | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).version")"
-          else
-            PREV=""
-          fi
-          echo "Version précédente : ${PREV:-<aucune>}"
-
-          # 1. Pas de changement de version -> rien à publier (sortie propre).
-          if [ "$CUR" = "$PREV" ]; then
-            echo "::notice::Version inchangée ($CUR) — aucune publication."
-            echo "publish=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # 2. La version a changé -> elle doit être STRICTEMENT supérieure (semver).
-          if [ -n "$PREV" ]; then
-            HIGHEST="$(printf '%s\n%s\n' "$PREV" "$CUR" | sort -V | tail -1)"
-            if [ "$HIGHEST" != "$CUR" ] || [ "$CUR" = "$PREV" ]; then
-              echo "::error::Régression de version : $CUR n'est pas strictement supérieure à $PREV."
-              exit 1
-            fi
-          fi
-
-          # 3. Filet de sécurité : le tag ne doit pas déjà exister sur GHCR.
-          if docker manifest inspect "$IMAGE:v$CUR" >/dev/null 2>&1; then
-            echo "::error::L'image $IMAGE:v$CUR existe déjà sur GHCR — incrémente la version."
-            exit 1
-          fi
-
-          echo "::notice::Version $CUR valide (> ${PREV:-<aucune>}) — publication."
-          echo "version=$CUR" >> "$GITHUB_OUTPUT"
-          echo "publish=true" >> "$GITHUB_OUTPUT"
-
   build-push:
-    needs: version-check
-    if: needs.version-check.outputs.publish == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Login GHCR
-        uses: docker/login-action@v3
+      - name: Read version
+        id: version
+        run: echo "value=$(node -p "require('./app/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Build & push (target prod)
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
         with:
           context: ./app
           target: prod
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ env.IMAGE }}:v${{ needs.version-check.outputs.version }}
+            ${{ env.IMAGE }}:v${{ steps.version.outputs.value }}
             ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
