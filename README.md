@@ -191,7 +191,6 @@ docker compose up --build --wait
 | --- | --- |
 | [docs/architecture.md](docs/architecture.md) | Schéma d'architecture + flux et composants |
 | [docs/finops.md](docs/finops.md) | Estimation de coût + comparaison EKS |
-| [docs/soutenance.md](docs/soutenance.md) | Script de présentation (avant-vente) + crash-tests |
 | [docs/argumentaire-soutenance.md](docs/argumentaire-soutenance.md) | Justification du choix k3s, réponses au jury |
 | [docs/deploy-prod.md](docs/deploy-prod.md) | Déploiement prod (avec/sans branche mergée) |
 | [docs/bloc2-k3s.md](docs/bloc2-k3s.md) | Installation et configuration k3s |

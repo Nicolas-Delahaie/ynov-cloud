@@ -114,8 +114,8 @@ Un traitement qui **lit la BDD** et produit un résultat exploitable.
 - [x] **Schéma d'architecture** clair et légendé (Mermaid) — [docs/architecture.md](docs/architecture.md)
 - [x] **Estimation de coût chiffrée** (FinOps) — tableau de coût mensuel justifié — [docs/finops.md](docs/finops.md)
 - [x] **README** à jour : URL publique + accès dashboards + commande de déploiement
-- [x] **Support de soutenance** (script 40 min + réponses jury) — [docs/soutenance.md](docs/soutenance.md)
-- [ ] **Répétition de la démo** à blanc : load test + chaos test + chrono self-healing — checklist prête ([docs/soutenance.md](docs/soutenance.md#5-checklist-de-répétition-à-blanc-avant-le-jour-j)), **à jouer sur le VPS**
+- [x] **Support de soutenance** : README autoportant (archi, garanties + crash-tests, FinOps) + [docs/argumentaire-soutenance.md](docs/argumentaire-soutenance.md) pour les réponses jury
+- [ ] **Répétition de la démo** à blanc : load test + chaos test + chrono self-healing — **à jouer sur le VPS**
 
 ---
 
