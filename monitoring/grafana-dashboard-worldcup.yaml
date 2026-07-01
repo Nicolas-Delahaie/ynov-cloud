@@ -3,7 +3,7 @@
 #
 #   kubectl apply -f monitoring/grafana-dashboard-worldcup.yaml
 #
-# Panels : req/s, latence p95, taux d'erreurs 5xx, CPU, mémoire, nb de pods.
+# Panels : req/s, latence p95, CPU global du nœud, CPU/mémoire par pod, nb de pods.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -45,12 +45,15 @@ data:
         },
         {
           "type": "timeseries",
-          "title": "Taux d'erreurs 5xx",
+          "title": "CPU global du nœud (%)",
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "fieldConfig": {
+            "defaults": { "unit": "percent", "min": 0, "max": 100 }
+          },
           "targets": [
             {
-              "expr": "sum(rate(http_requests_total{status_code=~\"5..\"}[1m])) / sum(rate(http_requests_total[1m]))",
-              "legendFormat": "ratio 5xx"
+              "expr": "(1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))) * 100",
+              "legendFormat": "CPU nœud"
             }
           ]
         },
