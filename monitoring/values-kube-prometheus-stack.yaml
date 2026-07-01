@@ -25,6 +25,14 @@ kubeProxy:
 kubeEtcd:
   enabled: false
 
+# k3s expose apiserver/etcd/scheduler via /metrics du kubelet (~70% des séries, inutilisées)
+kubelet:
+  serviceMonitor:
+    metricRelabelings:
+      - sourceLabels: [__name__]
+        action: drop
+        regex: '(apiserver|etcd|workqueue|scheduler|storage_operation|kubelet_runtime_operations|kubelet_http_requests|lasso_controller|rest_client)_.*'
+
 prometheus:
   prometheusSpec:
     retention: 7d
@@ -71,4 +79,4 @@ grafana:
       cpu: 50m
       memory: 128Mi
     limits:
-      memory: 256Mi
+      memory: 384Mi
